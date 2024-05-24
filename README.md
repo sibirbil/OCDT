@@ -1,6 +1,5 @@
 # Output-Constrained Decision Trees (OCDT)
 
-# Environment
 The repository contains YAML file (named `ocdt.yml`) to create the environment necessary to train the OCDT model. To create the environment you can use the following command:
 
 ```bash

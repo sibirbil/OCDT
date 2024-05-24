@@ -1,0 +1,2 @@
+fold,depth,ocrt_min_samples_leaf,ocrt_min_samples_split,ocrt_mse,medoid_dt_mse,dt_mse,ocrt_nof_infeasibilities,medoid_dt_nof_infeasibilities,dt_nof_infeasibilities
+0,12,5,5,751.2894814814816,560.418,674.2078385456679,0,0,87
