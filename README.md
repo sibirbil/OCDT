@@ -4,7 +4,7 @@ __Ş .İlker Birbil, Doğanay Özese, Mustafa Baydoğan__
 
 When there is a correlation between any pair of targets, one needs a prediction method that can handle vector-valued output. In this setting, multi-target learning is particularly important as it is widely used in various applications. This paper introduces new variants of decision trees that can handle not only multi-target output but also the constraints among the targets. We focus on the customization of conventional decision trees by adjusting the splitting criteria to handle the constraints and obtain feasible predictions. We present both an optimization-based exact approach and several heuristics, complete with a discussion on their respective advantages and disadvantages. To support our findings, we conduct a computational study to demonstrate and compare the results of the proposed approaches.
 
-The details of this work is available in our __[paper](https://arxiv.org/abs/2405.15314)__.
+The details of this work are available in our __[paper](https://arxiv.org/abs/2405.15314)__.
 
 ## Code Repository
 
