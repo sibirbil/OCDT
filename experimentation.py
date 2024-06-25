@@ -29,7 +29,7 @@ if __name__ == '__main__':
     for dataset in dataset_list:
         for ocdt_depth in ocdt_depth_list:
             if dataset == 'class':
-                optimization_problem = formulate_and_solve_lp_courses_data
+                optimization_problem = formulate_and_solve_lp_class_data
                 target_cols = [f'Course{id + 1}' for id in range(class_target_size)]
                 lagrangian_multiplier = 1500
 

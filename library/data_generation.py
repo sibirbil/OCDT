@@ -78,7 +78,7 @@ def generate_class_data(target_size = 7, data_size = 2000):
     full_df.to_csv(f'{base_folder}/data/class_df_size_{data_size}_targets_{target_size}.csv', index=False)
 
 def apply_constraints_on_scores_data():
-    full_df = pd.read_csv(f'{base_folder}/exams.csv')
+    full_df = pd.read_csv(f'{base_folder}/data/exams.csv')
 
     flag = full_df['reading score'] <= 50
     full_df.loc[flag, 'writing score'] = 0

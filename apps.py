@@ -46,7 +46,6 @@ def formulate_and_solve_lp_scores_data(y, x, lagrangian_multiplier = 0, verbose 
     # Solve the problem
     model.setObjective(sse, GRB.MINIMIZE)
     model.optimize()
-    # model.write('/home/user/Desktop/Research/OCDT/model.lp')
 
     if verbose:
         print("Optimal Solution:")
@@ -120,7 +119,7 @@ def formulate_and_solve_lp_forecasting_data(y, x, lagrangian_multiplier = 0, ver
     return preds
 
 
-def formulate_and_solve_lp_courses_data(y, x, lagrangian_multiplier=0, verbose=False):
+def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=False):
     num_instances = y.shape[0]
     num_targets = y.shape[1]
 
@@ -158,7 +157,6 @@ def formulate_and_solve_lp_courses_data(y, x, lagrangian_multiplier=0, verbose=F
     # Solve the problem
     model.setObjective(sse, GRB.MINIMIZE)
     model.optimize()
-    # model.write('/home/user/Desktop/Research/OCDT/model.lp')
 
     if verbose:
         print("Optimal Solution:")
@@ -205,7 +203,6 @@ def formulate_and_solve_lp_cars_data(y, x, lagrangian_multiplier=0, verbose=Fals
 
     # Optimize the model
     model.optimize()
-    # model.write('/home/user/Desktop/Research/OCDT/model.lp')
 
     preds = np.array([binary_vars[0].X, predictions[0].X])
 
