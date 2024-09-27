@@ -28,17 +28,15 @@ def generate_performance_barplot(perf_df, dataset = 'class', report_metric = 'ms
     perf_df_plot['mse'] = perf_df_plot['mse'] / perf_df_plot['mse'].max()
     perf_df_plot['training_duration'] = perf_df_plot['training_duration'] / perf_df_plot['training_duration'].max()
 
-    fig, ax1 = plt.subplots(figsize=(16, 8))
+    fig, ax1 = plt.subplots(figsize=(16, 10))
 
     ax1 = perf_df_plot[report_metric].plot.bar()
-    
-    # ax.set_title(f"Dataset: {dataset.upper()}", weight='bold', fontsize=20) # \n Metric: {report_metric.upper()}")
     ax1.set_ylim((0, perf_df_plot[report_metric].max() * 1.1))
-    ax1.set_xlabel("Class Dataset", weight='bold', labelpad=15, fontsize=22)
-    ax1.set_ylabel("(Scaled) Mean Squared Error", weight='bold', labelpad=15, fontsize=22)
-    ax1.set_xticklabels(perf_df_plot.run, color='black', fontsize=20)
-    ax1.set_yticklabels([x/10 for x in range(0, 11, 2)], fontsize=20)
-    ax1.tick_params(axis='x', labelrotation=0)
+    ax1.set_xlabel(f"{dataset.title()} Dataset", weight='bold', labelpad=15, fontsize=30)
+    ax1.set_ylabel("(Scaled) Mean Squared Error", weight='bold', labelpad=15, fontsize=28)
+    ax1.set_xticklabels(perf_df_plot.run, color='black', fontsize=24)
+    ax1.set_yticklabels([x/10 for x in range(0, 11, 2)], fontsize=24)
+    ax1.tick_params(axis='x', labelrotation=90, labelsize=28)
 
     # Axis formatting.
     ax1.spines['top'].set_visible(False)
@@ -63,7 +61,7 @@ def generate_performance_barplot(perf_df, dataset = 'class', report_metric = 'ms
     for rect, label in zip(rects, labels):
         height = rect.get_height()
         ax1.text(rect.get_x() + rect.get_width() / 2, height + 0.01, label, 
-                ha="center", va="bottom", color='blue', fontsize=20)
+                ha="center", va="bottom", color='blue', fontsize=23)
         
     ax2 = ax1.twinx()
     # ax2.plot(perf_df_plot['training_duration'].values, 'r-', linewidth=4)
@@ -71,7 +69,7 @@ def generate_performance_barplot(perf_df, dataset = 'class', report_metric = 'ms
                     ax=ax1, s=200, markers='+', color='darkred', legend=False)
 
     # Make the y-axis label and tick labels match the line color.
-    ax2.set_ylabel('(Scaled) Training Time', color='black', weight='bold', labelpad=15, fontsize=22)
+    ax2.set_ylabel('(Scaled) Training Time', color='black', weight='bold', labelpad=15, fontsize=28)
 
     # Axis formatting.
     ax2.spines['top'].set_visible(False)
@@ -79,7 +77,7 @@ def generate_performance_barplot(perf_df, dataset = 'class', report_metric = 'ms
     ax2.spines['left'].set_visible(False)
     ax2.spines['bottom'].set_color('#DDDDDD')
     ax2.tick_params(bottom=False, left=False, length=0)
-    ax2.yaxis.set_tick_params(labelsize=20)
+    ax2.yaxis.set_tick_params(labelsize=24)
     ax2.set_axisbelow(True)
     ax2.yaxis.grid(True, color='#EEEEEE')
     ax2.xaxis.grid(False)
@@ -103,9 +101,10 @@ def generate_performance_boxplots(perf_df, report_metric = 'mse', include_texts 
 
     perf_df_plot[report_metric] = perf_df_plot[report_metric] / perf_df_plot[report_metric].max()
     # perf_df_plot['training_duration'] = perf_df_plot['training_duration'] / perf_df_plot['training_duration'].max()
-
-    sns.set(font_scale=2)  # crazy big
-    ax1 = sns.boxplot(data=perf_df_plot, x='run', y=report_metric)
+    
+    fig, ax1 = plt.subplots(figsize=(16, 26))
+    sns.set(font_scale=2)
+    sns.boxplot(data=perf_df_plot, x='run', y=report_metric, ax=ax1)
 
     if include_texts:
         nof_inf_mean = perf_df_plot.groupby(['run'])['nof_infeasibilities'].mean()
@@ -116,18 +115,23 @@ def generate_performance_boxplots(perf_df, report_metric = 'mse', include_texts 
             ax1.text(xtick, mse_mean[xtick] + 0.05, f'N. of. Inf: {nof_inf_mean[xtick]}', 
                 color='black', size=10, weight='semibold')
     
+    if report_metric == 'training_duration':
+        title_metric = 'Training Time'
+    else:
+        title_metric = 'MSE'
+
     # ax.set_title(f"Dataset: {dataset.upper()}", weight='bold', fontsize=20) # \n Metric: {report_metric.upper()}")
-    ax1.set_ylabel("(Scaled) Training Time", weight='bold', labelpad=15, fontsize=22)
-    ax1.set_xlabel("", weight='bold', labelpad=15, fontsize=22)
+    ax1.set_ylabel(f"(Scaled) {title_metric}", weight='bold', labelpad=15, fontsize=28)
+    ax1.set_xlabel("", weight='bold', labelpad=15, fontsize=28)
     # ax1.set_xticklabels([0] + [x/10 for x in range(0, 11, 2)], color='black', fontsize=16)
     # ax1.set_yticklabels(perf_df_plot['run'].values, fontsize=16)
-    ax1.tick_params(axis='x', labelrotation=0)
+    ax1.tick_params(axis='x', labelrotation=90)
 
     ax1.spines['top'].set_visible(False)
     ax1.spines['right'].set_visible(False)
     ax1.spines['left'].set_visible(False)
     ax1.spines['bottom'].set_color('#DDDDDD')
-    ax1.tick_params(bottom=False, left=False, length=0)
+    ax1.tick_params(bottom=False, left=False, length=0, labelsize=28)
     ax1.set_axisbelow(True)
     ax1.yaxis.grid(True, color='#EEEEEE')
     ax1.xaxis.grid(False)
@@ -210,3 +214,30 @@ def create_depth_vs_infeasibilities_plot(features_df, targets_df, nplots = 25):
     ax2.set_axisbelow(True)
     ax2.yaxis.grid(True, color='#EEEEEE')
     ax2.xaxis.grid(False)
+
+def generate_lambda_coeff_plot(perf_df):
+    perf_df_gr = perf_df.groupby(['lagrangian_multiplier', 'prediction_method_leaf'])['mse'].mean().reset_index()
+    perf_df_gr.loc[perf_df_gr['prediction_method_leaf'] == 'lagrangian', 'prediction_method_leaf'] = 'S(R):S(R)'
+    perf_df_gr.loc[perf_df_gr['prediction_method_leaf'] == 'optimal', 'prediction_method_leaf'] = 'S(R):S(O)'
+    perf_df_gr.loc[perf_df_gr['prediction_method_leaf'] == 'medoid', 'prediction_method_leaf'] = 'S(R):S(M)'
+    perf_df_gr_piv = pd.pivot_table(perf_df_gr, index=['prediction_method_leaf'], columns=['lagrangian_multiplier'], values=['mse'])
+    perf_df_gr_piv.columns = [str(col) for col in perf_df_gr_piv.columns.droplevel()]
+    perf_df_gr_piv.index.name = 'Method'
+
+    fig, ax = plt.subplots()
+    ax = perf_df_gr_piv.T.plot(linewidth=3, ax=ax)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_color('#DDDDDD')
+    ax.tick_params(bottom=False, left=False, length=0)
+    ax.yaxis.set_tick_params(labelsize=24)
+    ax.set_axisbelow(True)
+    ax.yaxis.grid(True)
+    ax.xaxis.grid(False)
+    ax.xaxis.set_tick_params(labelsize=24)
+    ax.set_ylim((perf_df_gr_piv.min().min() * 0.9, perf_df_gr_piv.max().max() * 1.1))
+    plt.legend(prop={'size': 24})
+    plt.xlabel(r'Penalty Coefficient ($\lambda$)', fontsize=34)
+    plt.ylabel('Mean Squared Error (MSE)', fontsize=34)
+    fig.tight_layout()

@@ -142,4 +142,4 @@ if __name__ == '__main__':
                                                                         'evaluation_method': evaluation_method,
                                                                         'mse': ocdt_mse, 'nof_infeasibilities': ocdt_nof_infeasibilities,
                                                                         'training_duration': tree.training_duration}, index=[0])])
-                            perf_df.to_csv(f'data/perf_df_class_df_experimentation.csv', index=False)
+                            perf_df.to_csv(f'data/results/perf_df_{dataset}_df_experimentation.csv', index=False)
