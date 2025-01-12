@@ -17,6 +17,8 @@ if __name__ == '__main__':
     ocdt_min_samples_leaf = 5
     number_of_folds = 5
     verbose = False
+    use_hashmaps = False
+    use_initial_solution = False
     ocdt_depth_list = [15]
     class_target_size = 7
     class_size = 1000
@@ -116,14 +118,14 @@ if __name__ == '__main__':
                             nof_infeasibilities_method = lambda y, x: calculate_number_of_infeasibilities(y, x, dataset,
                                                                                     'OCDT', ocdt_depth, target_cols, verbose)
                             lagrangian_multiplier = 0
-                            split_criteria = lambda y, x, nof_infeasibilities_method: split_criteria_with_methods(y, x, nof_infeasibilities_method,
-                                    lagrangian_multiplier, prediction_method, evaluation_method, optimization_problem, verbose)
-                            leaf_prediction_method = lambda y, x, nof_infeasibilities_method: split_criteria_with_methods(y, x, nof_infeasibilities_method,
-                                    lagrangian_multiplier, prediction_method_leaf, evaluation_method, optimization_problem, verbose)
+                            split_criteria = lambda y, x, nof_infeasibilities_method, initial_solution: split_criteria_with_methods(y, x, nof_infeasibilities_method,
+                                    initial_solution, lagrangian_multiplier, prediction_method, evaluation_method, optimization_problem, verbose)
+                            leaf_prediction_method = lambda y, x, nof_infeasibilities_method, initial_solution: split_criteria_with_methods(y, x, nof_infeasibilities_method,
+                                    initial_solution, lagrangian_multiplier, prediction_method_leaf, evaluation_method, optimization_problem, verbose)
 
                             tree = OCDT(max_depth=ocdt_depth, min_samples_leaf=ocdt_min_samples_leaf, min_samples_split=ocdt_min_samples_split,
                                         split_criteria=split_criteria, leaf_prediction_method=leaf_prediction_method,
-                                        nof_infeasibilities_method=nof_infeasibilities_method, verbose=verbose)
+                                        nof_infeasibilities_method=nof_infeasibilities_method, verbose=verbose, use_hashmaps = use_hashmaps, use_initial_solution = use_initial_solution)
                             tree.fit(X_train, y_train)
                             # tree.get_rules(X_train.iloc[1:40], tree.max_depth, tree.Tree, [])
                             y_pred = tree.predict(X_test)
@@ -141,5 +143,7 @@ if __name__ == '__main__':
                                                                         'prediction_method_leaf': prediction_method_leaf,
                                                                         'evaluation_method': evaluation_method,
                                                                         'mse': ocdt_mse, 'nof_infeasibilities': ocdt_nof_infeasibilities,
-                                                                        'training_duration': tree.training_duration}, index=[0])])
+                                                                        'training_duration': tree.training_duration,
+                                                                        'use_hashmaps': use_hashmaps,
+                                                                        'use_initial_solution': use_initial_solution}, index=[0])])
                             perf_df.to_csv(f'data/results/perf_df_{dataset}_df_experimentation.csv', index=False)

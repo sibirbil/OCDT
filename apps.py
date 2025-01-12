@@ -1,9 +1,10 @@
 import numpy as np
+import pandas as pd
 
 import gurobipy as gp
 from gurobipy import GRB
 
-def formulate_and_solve_lp_scores_data(y, x, lagrangian_multiplier = 0, verbose = False):
+def formulate_and_solve_lp_scores_data(y, x, initial_solution, lagrangian_multiplier = 0, verbose = False):
     num_instances = y.shape[0]
     num_targets = y.shape[1]
 
@@ -45,6 +46,12 @@ def formulate_and_solve_lp_scores_data(y, x, lagrangian_multiplier = 0, verbose 
 
     # Solve the problem
     model.setObjective(sse, GRB.MINIMIZE)
+
+    if sum(initial_solution) > 0:
+        model.update()
+        for idx, v in enumerate([v for v in model.getVars() if v.VarName.startswith('y')]):
+            v.Start = initial_solution[idx]
+
     model.optimize()
 
     if verbose:
@@ -58,7 +65,7 @@ def formulate_and_solve_lp_scores_data(y, x, lagrangian_multiplier = 0, verbose 
     return preds
 
 
-def formulate_and_solve_lp_forecasting_data(y, x, lagrangian_multiplier = 0, verbose = False):
+def formulate_and_solve_lp_forecasting_data(y, x, initial_solution, lagrangian_multiplier = 0, verbose = False):
     num_instances = y.shape[0]
     num_targets = y.shape[1]
 
@@ -105,6 +112,11 @@ def formulate_and_solve_lp_forecasting_data(y, x, lagrangian_multiplier = 0, ver
             model.addConstr(predictions[i - 1] + predictions[i - 2] + predictions[i - 3] >= 120 * indicator_120[i-1])
             model.addConstr(predictions[i] <= 10 + 90 * (1 - indicator_120[i-1]))
 
+    if sum(initial_solution) > 0:
+        model.update()
+        for idx, v in enumerate([v for v in model.getVars() if v.VarName.startswith('y')]):
+            v.Start = initial_solution[idx]
+
     # Optimize the model
     model.optimize()
 
@@ -119,7 +131,7 @@ def formulate_and_solve_lp_forecasting_data(y, x, lagrangian_multiplier = 0, ver
     return preds
 
 
-def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=False):
+def formulate_and_solve_lp_class_data(y, x, initial_solution, lagrangian_multiplier=0, verbose=False):
     num_instances = y.shape[0]
     num_targets = y.shape[1]
 
@@ -156,6 +168,12 @@ def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=Fal
 
     # Solve the problem
     model.setObjective(sse, GRB.MINIMIZE)
+
+    if sum(initial_solution) > 0:
+        model.update()
+        for idx, v in enumerate([v for v in model.getVars() if v.VarName.startswith('y')]):
+            v.Start = initial_solution[idx]
+
     model.optimize()
 
     if verbose:
@@ -169,7 +187,7 @@ def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=Fal
     return preds
 
 
-def formulate_and_solve_lp_cars_data(y, x, lagrangian_multiplier=0, verbose=False, bigM=100000):
+def formulate_and_solve_lp_cars_data(y, x, initial_solution, lagrangian_multiplier=0, verbose=False, bigM=100000):
     # Create a new Gurobi model
     model = gp.Model("Binary and Continuous Variables")
     if not verbose:
@@ -200,6 +218,11 @@ def formulate_and_solve_lp_cars_data(y, x, lagrangian_multiplier=0, verbose=Fals
         model.addConstr(predictions[0] <= bigM * binary_vars[0], "y_upper_bound_constraint")
 
     model.setObjective(sse, GRB.MINIMIZE)
+
+    if sum(initial_solution) > 0:
+        model.update()
+        for idx, v in enumerate([v for v in model.getVars() if v.VarName.startswith('y')]):
+            v.Start = initial_solution[idx]
 
     # Optimize the model
     model.optimize()

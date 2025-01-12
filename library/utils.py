@@ -50,12 +50,12 @@ def calculate_number_of_infeasibilities(y_pred, X_test, dataset, model, ocdt_dep
 
     return nof_infeasibilities
 
-def split_criteria_with_methods(y, x, nof_infeasibilities_method, lagrangian_multiplier, prediction_method,
+def split_criteria_with_methods(y, x, nof_infeasibilities_method, initial_solution, lagrangian_multiplier, prediction_method,
                                 evaluation_method, optimization_problem, verbose=False):
     if prediction_method == 'medoid':
         predictions = return_medoid(y)
     elif prediction_method == 'optimal':
-        predictions = optimization_problem(y, x, lagrangian_multiplier, verbose)
+        predictions = optimization_problem(y, x, initial_solution, lagrangian_multiplier, verbose)
     else:
         predictions = return_mean(y)
 
@@ -65,9 +65,5 @@ def split_criteria_with_methods(y, x, nof_infeasibilities_method, lagrangian_mul
         split_evaluation = calculate_mad(y, predictions)
     else:
         split_evaluation = calculate_poisson_deviance(y, predictions)
-
-    predictions_all = (predictions * np.ones((y.shape[0], y.shape[1])))
-    nof_infeasibilities = nof_infeasibilities_method(predictions_all, x)
-    # split_evaluation += nof_infeasibilities * lagrangian_multiplier
 
     return predictions, split_evaluation

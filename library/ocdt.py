@@ -88,7 +88,9 @@ class OCDT:
                  split_criteria = None,
                  leaf_prediction_method = None,
                  nof_infeasibilities_method = None,
-                 verbose = False):
+                 verbose = False,
+                 use_hashmaps = True,
+                 use_initial_solution = True):
         self.max_depth = max_depth
         self.min_samples_leaf = min_samples_leaf
         self.min_samples_split = min_samples_split
@@ -97,6 +99,8 @@ class OCDT:
         self.leaf_prediction_method = leaf_prediction_method
         self.verbose = verbose
         self.Tree = None
+        self.use_hashmaps = use_hashmaps
+        self.use_initial_solution = use_initial_solution
 
     def buildDT(self, features, labels, node):
         """
@@ -107,7 +111,7 @@ class OCDT:
             labels (pandas.DataFrame): The labels or target variables corresponding to the features.
             node (Node): The current node in the tree being built.
         """
-        node.prediction, _ = self.split_criteria(labels.to_numpy(), features.to_numpy(), self.nof_infeasibilities_method)
+        node.prediction, _ = self.split_criteria(labels.to_numpy(), features.to_numpy(), self.nof_infeasibilities_method, self.best_solution)
 
         node.count = labels.shape[0]
         if node.depth >= self.max_depth:
@@ -167,9 +171,14 @@ class OCDT:
             labels (pandas.DataFrame): The labels or target variables corresponding to the features.
         """
         start = time.time()
+        self.features = features
+        self.labels = labels
+        self.preds_dict = {}
         self.Tree = Node()
         self.Tree.depth = 0
         self.Tree.id = 1
+        self.best_solution = np.zeros(self.labels.shape[1])
+        self.best_solution_perf = float('inf')
         self.buildDT(features, labels, self.Tree)
         leaves = self.apply(features)
         leaf_predictions = {}
@@ -177,7 +186,7 @@ class OCDT:
             leaf_indices = np.where(leaves == leaf_id)[0]
             leaf_labels = labels.iloc[leaf_indices].to_numpy()
             leaf_features = features.iloc[leaf_indices].to_numpy()
-            leaf_predictions[leaf_id], _ = self.leaf_prediction_method(leaf_labels, leaf_features, self.nof_infeasibilities_method)
+            leaf_predictions[leaf_id], _ = self.leaf_prediction_method(leaf_labels, leaf_features, self.nof_infeasibilities_method, self.best_solution)
         self.leaf_predictions_df = pd.DataFrame(leaf_predictions)
         end = time.time()
         self.training_duration = end-start
@@ -312,14 +321,42 @@ class OCDT:
                 left_yi = sort_y[:i, :]
                 right_yi = sort_y[i:, :]
 
-                left_xi = features.to_numpy()[sort_idx][:i]
-                right_xi = features.to_numpy()[sort_idx][i:]
+                if self.use_hashmaps:
+                    left_idx = tuple(sorted(features.iloc[sort_idx[:i]].index))
+                    right_idx = tuple(sorted(features.iloc[sort_idx[i:]].index))
+                    
+                    left_xi = features.to_numpy()[sort_idx[:i]]
+                    right_xi = features.to_numpy()[sort_idx[i:]]
+
+                    if left_idx not in self.preds_dict:
+                        left_prediction, left_perf = self.split_criteria(left_yi, left_xi, self.nof_infeasibilities_method, self.best_solution)
+                        self.preds_dict[left_idx] = {'preds': left_prediction, 'perf': left_perf}
+                    else:
+                        left_prediction, left_perf = self.preds_dict[left_idx]['preds'], self.preds_dict[left_idx]['perf']
+
+                    if right_idx not in self.preds_dict:
+                        right_prediction, right_perf = self.split_criteria(right_yi, right_xi, self.nof_infeasibilities_method, self.best_solution)
+                        self.preds_dict[right_idx] = {'preds': right_prediction, 'perf': right_perf}
+                    else:
+                        right_prediction, right_perf = self.preds_dict[right_idx]['preds'], self.preds_dict[right_idx]['perf']
+                else:
+                    left_xi = features.to_numpy()[sort_idx][:i]
+                    right_xi = features.to_numpy()[sort_idx][i:]
+
+                    left_prediction, left_perf = self.split_criteria(left_yi, left_xi, self.nof_infeasibilities_method, self.best_solution)
+                    right_prediction, right_perf = self.split_criteria(right_yi, right_xi, self.nof_infeasibilities_method, self.best_solution)
+
+                if self.use_initial_solution:
+                    if left_perf < self.best_solution_perf:
+                        self.best_solution_perf = left_perf
+                        self.best_solution = left_prediction
+                    if right_perf < self.best_solution_perf:
+                        self.best_solution_perf = right_perf
+                        self.best_solution = right_prediction
 
                 left_instance_count = left_yi.shape[0]
                 right_instance_count = right_yi.shape[0]
 
-                left_prediction, left_perf = self.split_criteria(left_yi, left_xi, self.nof_infeasibilities_method)
-                right_prediction, right_perf = self.split_criteria(right_yi, right_xi, self.nof_infeasibilities_method)
                 curr_score = (left_perf * left_instance_count + right_perf * right_instance_count) / n
 
                 split_perf[cut_id, 0] = curr_score
