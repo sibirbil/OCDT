@@ -301,6 +301,7 @@ class OCDT:
         return rules
 
     def calcBestSplitCustom(self, features, labels):
+        evaluated_thresholds = {feat: [] for feat in range(features.shape[1])}
         n = features.shape[0]
         cut_id = 0
         n_obj = 1
@@ -315,8 +316,9 @@ class OCDT:
             sort_x = x[sort_idx]
             sort_y = y[sort_idx, :]
 
-            for i in range(self.min_samples_leaf, n - self.min_samples_leaf - 1):
+            for i in range(self.min_samples_leaf, n - self.min_samples_leaf + 1):
                 xi = sort_x[i]
+                prev_val = sort_x[i - 1]
 
                 left_yi = sort_y[:i, :]
                 right_yi = sort_y[i:, :]
@@ -358,13 +360,16 @@ class OCDT:
                 right_instance_count = right_yi.shape[0]
 
                 curr_score = (left_perf * left_instance_count + right_perf * right_instance_count) / n
+                threshold_val = (xi + prev_val) / 2
+
+                if ((xi == sort_x[i - 1]) or (xi in evaluated_thresholds[k])):
+                    continue
+                else:
+                    evaluated_thresholds[k].append(xi)
 
                 split_perf[cut_id, 0] = curr_score
                 split_info[cut_id, 0] = k
-                split_info[cut_id, 1] = xi
-
-                if i < self.min_samples_leaf or xi == sort_x[i + 1]:
-                    continue
+                split_info[cut_id, 1] = threshold_val
 
                 cut_id += 1
 
